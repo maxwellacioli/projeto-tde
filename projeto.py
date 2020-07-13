@@ -9,10 +9,44 @@ Created on Mon Jul 13 08:41:30 2020
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+import datetime as dt
 
 covid = pd.read_csv("covid19-al-sintomas.csv")
 
-#exclusão de colunas inicialmente não relevantes
+#lista de indices a serem removidos 
+index_to_remove = []
+#tempo de isolamento domiciliar
+isolation_days_range = 14
+current_year = 2020
+#inicio da pandamia, os primeiros casos foram registrados a partir desta data
+pandemic_start_month = 3
+
+# Descarta os casos de 'isolamento domiciliar' recentes (menos de 14 dias),
+# também descarta casos com mes ou ano marcado incorretamente
+for index, row in covid.iterrows():
+    # data do atual
+    today = dt.date.today()
+    # data do atendimento 
+    date = dt.datetime.strptime(row['data_atendimento'], 
+                                "%Y-%m-%dT%H:%M:%S.%fZ").date()
+    # diferença de dias entre as datas
+    delta = today - date
+    # flag sobre a instancia se tratar ou não de isolamento domiciliar
+    is_isolation = row['situacao_atual'] == 'Isolamento Domiciliar'
+    
+    # Instancias com ano incorreto
+    if date.year > current_year:
+        index_to_remove.append(index)
+    # Instancias com meses incorretos
+    elif date.month < pandemic_start_month:
+        index_to_remove.append(index)
+    # Instancias que tem menos de 14 dias e representa isolamento domiciliar
+    elif is_isolation & (delta.days < isolation_days_range):
+        index_to_remove.append(index)
+
+covid.drop(covid.index[index_to_remove], inplace=True )
+
+# exclusão de colunas inicialmente não relevantes
 covid = covid.drop(['id', 'etnia', 'municipio_residencia',
                     'classificacao', 'data_resultado_exame',
                     'data_atendimento', 'tipo_coleta', 
@@ -20,7 +54,7 @@ covid = covid.drop(['id', 'etnia', 'municipio_residencia',
                     'idoso', 'profissional_saude',
                     'outros', 'outros_fatores'], axis=1)
 
-#exclusão de colunas sem marcação
+# exclusão de colunas sem marcação
 covid = covid.drop(['ausegia', 'anosmia', 'nausea_vomito',
                     'coriza', 'congestao_nasal', 'calafrio'], axis=1)
 
@@ -97,3 +131,4 @@ print(covid.info())
 X_train, X_test, y_train, y_test = train_test_split(covid, situacao, 
                                                     test_size=0.2, 
                                                     random_state=42)
+
