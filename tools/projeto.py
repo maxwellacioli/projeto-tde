@@ -122,6 +122,24 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
                               & (covid_df['sem_comorbidade'] == 0)
                               & (covid_df['pneumopatia'] == 0)].index)
     
+    # Balanceamento de instâncias
+    group = covid_df.groupby(covid_df.situacao_atual)
+    covid_df_1 = group.get_group(1)
+    covid_df_0 = group.get_group(0)
+    
+    # Numero total de casos de obitos
+    index = covid_df_1.index
+    number_of_rows = len(index)
+    
+    # Seleciona aleatoriamente o numero de linhas
+    covid_df_0 = covid_df_0.sample(n = number_of_rows)
+    
+    # Faz o merge dos dois df
+    covid_df = pd.concat([covid_df_1, covid_df_0], ignore_index=True)
+    
+    # Faz o shuffle do merge dos dfs
+    covid_df = covid_df.sample(frac=1).reset_index(drop=True)
+    
     #mover coluna situação_atual para o final do dataframe
     situacao = covid_df.pop('situacao_atual')
     
