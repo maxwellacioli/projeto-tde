@@ -20,12 +20,11 @@ clf = clf.fit(X_train, y_train)
 preds = clf.predict(X_test)
 
 acc_scor = accuracy_score(y_test,preds)
-prec_scor = precision_score(y_test,preds, average='weighted')
-f1_scor = f1_score(y_test,preds, average='weighted')
-rec_scor = recall_score(y_test,preds, average='weighted')
+prec_scor = precision_score(y_test,preds)
+f1_scor = f1_score(y_test,preds)
+rec_scor = recall_score(y_test,preds)
 
-print("Accuracy: {}".format(acc_scor) + 
-      "     Precision: {}".format(prec_scor) + 
-      "     Recall: {}".format(rec_scor) + 
-      "     F1: {}".format(f1_scor))
-
+print("Accuracy: {}\n".format(acc_scor) + 
+      "Precision: {}\n".format(prec_scor) + 
+      "Recall: {}\n".format(rec_scor) + 
+      "F1: {}\n".format(f1_scor))
