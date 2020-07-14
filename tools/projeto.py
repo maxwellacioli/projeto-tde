@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 import datetime as dt
+import prince
 
 def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
 
@@ -138,11 +139,10 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
     
     # Faz o shuffle do merge dos dfs
     covid_df = covid_df.sample(frac=1).reset_index(drop=True)
-    
+
     #mover coluna situação_atual para o final do dataframe
     situacao = covid_df.pop('situacao_atual')
-    
-    
+   
     # print(covid_df.info())
     
     #Dividir o conjunto de informações em dados de treino e teste
@@ -150,5 +150,5 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
                                                         test_size=0.2, 
                                                         random_state=42)
     
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, covid_df, situacao
 
