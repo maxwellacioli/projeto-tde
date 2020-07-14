@@ -54,7 +54,7 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
                         'data_atendimento', 'tipo_coleta', 
                         'data_obito', 'data_confirmacao_obito',
                         'idoso', 'profissional_saude',
-                        'outros', 'outros_fatores'], axis=1)
+                        'outros', 'outros_fatores', 'doenca_auto_imune'], axis=1)
     
     # exclusão de colunas sem marcação
     covid_df = covid_df.drop(['ausegia', 'anosmia', 'nausea_vomito',
@@ -117,7 +117,6 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
                               & (covid_df['paciente_oncologico'] == 0)
                               & (covid_df['obesidade'] == 0)
                               & (covid_df['doenca_renal_cronica'] == 0)
-                              & (covid_df['doenca_auto_imune'] == 0)
                               & (covid_df['asma'] == 0)
                               & (covid_df['sem_comorbidade'] == 0)
                               & (covid_df['pneumopatia'] == 0)].index)
