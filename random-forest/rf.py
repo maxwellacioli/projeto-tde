@@ -16,7 +16,8 @@ from sklearn.ensemble import RandomForestClassifier
 
 X_train, X_test, y_train, y_test, data, target = preprocess()
 
-clf = RandomForestClassifier(max_depth= 5, random_state=9)
+clf = RandomForestClassifier(criterion='entropy', class_weight='balanced',
+                             max_depth= 5, random_state=42)
 clf = clf.fit(X_train, y_train)
 
 preds = clf.predict(X_test)

@@ -7,10 +7,8 @@ Created on Mon Jul 13 08:41:30 2020
 
 
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 import datetime as dt
-import prince
 
 def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
 
@@ -127,6 +125,8 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
     covid_df_1 = group.get_group(1)
     covid_df_0 = group.get_group(0)
     
+    covid_df_0.drop_duplicates()
+    
     # Numero total de casos de obitos
     index = covid_df_1.index
     number_of_rows = len(index)
@@ -142,7 +142,7 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
 
     #mover coluna situação_atual para o final do dataframe
     situacao = covid_df.pop('situacao_atual')
-   
+    
     # print(covid_df.info())
     
     #Dividir o conjunto de informações em dados de treino e teste
