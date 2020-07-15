@@ -18,9 +18,6 @@ X_train, X_test, y_train, y_test, data, target = preprocess()
 
 clf = RandomForestClassifier(criterion='entropy', class_weight='balanced',
                              max_depth= 5, random_state=42)
-clf = clf.fit(X_train, y_train)
-
-preds = clf.predict(X_test)
 
 acc_scor = np.mean(cross_val_score(clf, data, target, cv=10, scoring='accuracy'))
 prec_scor = np.mean(cross_val_score(clf, data, target, cv=10, scoring='precision'))
