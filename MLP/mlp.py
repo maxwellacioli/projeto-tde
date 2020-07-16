@@ -6,6 +6,7 @@ import torch
 import sys
 sys.path.append("../tools/")
 from projeto import preprocess
+from torchsummary import summary
 from torch import nn
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from sklearn import preprocessing
@@ -15,13 +16,13 @@ from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_sc
 class MLP(nn.Module):
     def __init__(self):
         super(MLP,self).__init__()
-        self.hidden1 = nn.Linear(23,23)
-        self.hidden2 = nn.Linear(23,11)
-        self.hidden3 = nn.Linear(11,6)
-        self.output = nn.Linear(6,1)
+        self.hidden1 = nn.Linear(22,44)
+        self.hidden2 = nn.Linear(44,16)
+        self.hidden3 = nn.Linear(16,5)
+        self.output = nn.Linear(5,1)
 
         self.sigmoid = nn.Sigmoid()
-        #self.softmax = nn.Softmax()
+        # self.softmax = nn.Softmax()
         self.relu = nn.ReLU()
     
     def forward(self,x):
@@ -33,11 +34,11 @@ class MLP(nn.Module):
         x = self.relu(x)
         x = self.output(x)
         #x = self.relu(x)
-        #x = self.softmax(x)
+       # x = self.softmax(x)
         x = self.sigmoid(x)
         return x
 
-class covid_datset(torch.utils.data.Dataset):
+class covid_dataset(torch.utils.data.Dataset):
     def __init__(self,values,labels):
         self.val = values
         self.labels = labels
@@ -52,130 +53,11 @@ class covid_datset(torch.utils.data.Dataset):
 
         return x,y
 
-# def pre_processing(data):
-#     covid = pd.read_csv(data)
-
-#     #lista de indices a serem removidos 
-#     index_to_remove = []
-#     #tempo de isolamento domiciliar
-#     isolation_days_range = 14
-#     current_year = 2020
-#     #inicio da pandamia, os primeiros casos foram registrados a partir desta data
-#     pandemic_start_month = 3
-
-#     # Descarta os casos de 'isolamento domiciliar' recentes (menos de 14 dias),
-#     # também descarta casos com mes ou ano marcado incorretamente
-#     for index, row in covid.iterrows():
-#         # data do atual
-#         today = dt.date.today()
-#         # data do atendimento 
-#         date = dt.datetime.strptime(row['data_atendimento'], 
-#                                     "%Y-%m-%dT%H:%M:%S.%fZ").date()
-#         # diferença de dias entre as datas
-#         delta = today - date
-#         # flag sobre a instancia se tratar ou não de isolamento domiciliar
-#         is_isolation = row['situacao_atual'] == 'Isolamento Domiciliar'
-        
-#         # Instancias com ano incorreto
-#         if date.year > current_year:
-#             index_to_remove.append(index)
-#         # Instancias com meses incorretos
-#         elif date.month < pandemic_start_month:
-#             index_to_remove.append(index)
-#         # Instancias que tem menos de 14 dias e representa isolamento domiciliar
-#         elif is_isolation & (delta.days < isolation_days_range):
-#             index_to_remove.append(index)
-
-#     covid.drop(covid.index[index_to_remove], inplace=True )
-
-#     # exclusão de colunas inicialmente não relevantes
-#     covid = covid.drop(['id', 'etnia', 'municipio_residencia',
-#                         'classificacao', 'data_resultado_exame',
-#                         'data_atendimento', 'tipo_coleta', 
-#                         'data_obito', 'data_confirmacao_obito',
-#                         'idoso', 'profissional_saude',
-#                         'outros', 'outros_fatores'], axis=1)
-
-#     # exclusão de colunas sem marcação
-#     covid = covid.drop(['ausegia', 'anosmia', 'nausea_vomito',
-#                         'coriza', 'congestao_nasal', 'calafrio'], axis=1)
-
-#     #exclusão das instancia cujo fator não foi informado
-#     covid = covid[covid['fator_nao_informado'] != 'X']
-
-#     #exclusão da coluna fator_nao_informado
-#     covid = covid.drop(['fator_nao_informado'], axis=1)
-
-#     #exclusão das instancia cujos sintomas não foram informados
-#     covid = covid[covid['nao_informado'] != 'X']
-
-#     #exclusão da coluna nao_informado
-#     covid = covid.drop(['nao_informado'], axis=1)
-
-#     #exclusão das instâncias de casos que ainda estão em aberto
-
-#     #pacientes que estão em isolamento domiciliar
-#     # covid = covid[covid['situacao_atual'] != 'Isolamento Domiciliar']
-
-#     #pacientes que estão em internação UTI
-#     covid = covid[covid['situacao_atual'] != 'Internação UTI']
-
-#     #pacientes que estão em internamento de leite clínico
-#     covid = covid[covid['situacao_atual'] != 'Internação Leito Clínico']
-
-#     #Substituição de valores
-
-#     #Substitue os valores NaN por 0 (zero)
-#     covid = covid.fillna(0)
-#     #Substitue os valores X por 1 
-#     covid = covid.replace('X', 1)
-#     #Substitue valores Masculino e Feminino
-#     covid = covid.replace('Masculino', 1)
-#     covid = covid.replace('Mascuino', 1)
-#     covid = covid.replace('Feminino', 0)
-
-#     #Substitue valores na coluna situacao_atual
-#     covid = covid.replace('Óbito', 1)
-#     #Substitue todas as outras situacoes em 0 (não morte)
-#     covid = covid.replace(to_replace='[a-zA-Z]', value=0, regex=True)
-
-#     #exclusão das instâncias que não têm nenhum valor
-#     covid = covid.drop(covid[(covid['febre'] == 0) 
-#                             & (covid['tosse'] == 0)
-#                             & (covid['cefaleia'] == 0)
-#                             & (covid['dificuldade_respiratoria'] == 0)
-#                             & (covid['dispineia'] == 0)
-#                             & (covid['mialgia'] == 0)
-#                             & (covid['saturacao_menor_noventa_cinco'] == 0)
-#                             & (covid['adinofagia'] == 0)
-#                             & (covid['diarreia'] == 0)
-#                             & (covid['adinamia'] == 0)
-#                             & (covid['doenca_cardiovascular'] == 0)
-#                             & (covid['diabetes'] == 0)
-#                             & (covid['doenca_respiratoria_cronica'] == 0)
-#                             & (covid['hipertensao'] == 0)
-#                             & (covid['paciente_oncologico'] == 0)
-#                             & (covid['obesidade'] == 0)
-#                             & (covid['doenca_renal_cronica'] == 0)
-#                             & (covid['doenca_auto_imune'] == 0)
-#                             & (covid['asma'] == 0)
-#                             & (covid['sem_comorbidade'] == 0)
-#                             & (covid['pneumopatia'] == 0)].index)
-
-
-#     #mover coluna situação_atual para o final do dataframe
-#     y = covid.pop('situacao_atual')
-#     #Normalizando idade
-#     x = covid[['idade']].values.astype(float)
-#     x = x/100
-#     covid['idade'] = x
-
-#     return covid.astype(float).to_numpy(),y.astype(int).to_numpy()
 
 def get_weights(y):
     weights = []
     wg = np.count_nonzero(y==0)/np.count_nonzero(y==1)
-    wg /=1
+    wg = 1
     print("Setting weight to {}".format(wg))
     for i in y:
         if i == 1:
@@ -186,30 +68,35 @@ def get_weights(y):
 
 def run(num_workers=0,batch_size=100):
     torch.cuda.empty_cache()
-    # data,y = pre_processing(f)
-    # data = data.reshape((-1,23))
-    # y = y.reshape((-1,1))
-    # #data = data.to_numpy()
-
-    # X_train,X_test,Y_train,Y_test = train_test_split(data,y,test_size=0.2,shuffle=True)
-
-    X_train, X_test, Y_train, Y_test = preprocess()
-    X_train = X_train.astype(float).to_numpy().reshape(-1,23)
-    X_test = X_test.astype(float).to_numpy().reshape(-1,23)
+    X_train, X_test, Y_train, Y_test, data, target = preprocess()
+    print(X_test.shape)
+    X_train = X_train.astype(float).to_numpy().reshape(-1,22)
+    X_test = X_test.astype(float).to_numpy().reshape(-1,22)
     Y_train = Y_train.astype(int).to_numpy().reshape(-1,1)
     Y_test = Y_test.astype(int).to_numpy().reshape(-1,1)
+    
     print(X_train.shape)
     print(Y_train.shape)
-    cov_set = covid_datset(X_train,Y_train)
+    
+
+    cov_set = covid_dataset(X_train,Y_train)
+    val_set = covid_dataset(X_test,Y_test)
     weights = get_weights(Y_train)
     sampler = WeightedRandomSampler(weights,len(weights))
-    data_generator = DataLoader(cov_set,batch_size=batch_size,num_workers=num_workers,sampler=sampler)
+    #data_generator = DataLoader(cov_set,batch_size=batch_size,num_workers=num_workers,sampler=sampler)
+    data_generator = DataLoader(cov_set,batch_size=batch_size,num_workers=num_workers)
+    val_generator = DataLoader(val_set,batch_size=batch_size,num_workers=num_workers)
 
     mlp = MLP()
     mlp.cuda()
-    loss_fn = nn.BCEWithLogitsLoss()
+    summary(mlp,(1,22))
+    loss_fn = nn.BCELoss()
     loss_fn.cuda()
-    optimizer = torch.optim.Adam(mlp.parameters(), lr=0.002)
+    #optimizer = torch.optim.SGD(mlp.parameters(),lr=0.001,momentum=0.1)
+    optimizer = torch.optim.AdamW(mlp.parameters(), lr=0.01)
+
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
+    
     epochs = 100
     input("Press any key to start\n")
     for t in range(epochs):
@@ -217,28 +104,29 @@ def run(num_workers=0,batch_size=100):
         for x_train, y_train in data_generator:
             x_train, y_train = x_train.cuda(), y_train.cuda()
             y_pred = mlp(x_train.float())
-            #print(y_pred.shape)
-            #print(y_pred)
-            #y_pred = nn.functional.one_hot(y_pred.to(torch.int64),num_classes=2)
-            #print(y_pred)
-            #print(y_pred.shape)
-           # y_train = y_train.reshape((-1,1))
             loss = loss_fn(y_pred,y_train.float())
             print("Loss = {}".format(loss.item()))
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        with torch.no_grad():
+            val_loss = 0
+            n = 0
+            for x_val, y_val in val_generator:
+                x_val, y_val = x_val.cuda(), y_val.cuda()
+                y_pred_val = mlp(x_val.float())
+                val_loss += loss_fn(y_pred_val,y_val.float())
+                n +=1
+            val_loss /=n
+            print("Val Loss = {}".format(val_loss.item()))
+            lr_scheduler.step(val_loss)  
+
 
     X_test = torch.from_numpy(X_test).cuda()
 
     y_pred = mlp(X_test.float()).cpu().detach().numpy()
 
-    preds = []
-    for pr in y_pred:
-        if pr > 0.5:
-            preds.append(1)
-        else:
-            preds.append(0)
+    preds = y_pred > 0.5
 
     acc_scor = accuracy_score(Y_test,preds)
     prec_scor = precision_score(Y_test,preds)
@@ -251,8 +139,9 @@ def run(num_workers=0,batch_size=100):
     plt.figure()
     plt.stem(list(range(0,150)),Y_test[0:150],'g', markerfmt='go')
     plt.stem(list(range(0,150)),preds[0:150],'--r', markerfmt='ro')
+    plt.figure()
+    plt.plot(y_pred)
     plt.show()
-
 
 if __name__=="__main__":
     run()
