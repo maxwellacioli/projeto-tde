@@ -53,11 +53,11 @@ def preprocess(file_name='../tools/covid19-al-sintomas.csv'):
                         'data_atendimento', 'tipo_coleta', 
                         'data_obito', 'data_confirmacao_obito',
                         'idoso', 'profissional_saude',
-                        'outros', 'outros_fatores', 'doenca_auto_imune'], axis=1)
+                        'outros', 'outros_fatores'], axis=1)
     
     # exclusão de colunas sem marcação
     covid_df = covid_df.drop(['ausegia', 'anosmia', 'nausea_vomito',
-                        'coriza', 'congestao_nasal', 'calafrio'], axis=1)
+                        'coriza', 'congestao_nasal', 'calafrio', 'doenca_auto_imune'], axis=1)
     
     #exclusão das instancia cujo fator não foi informado
     covid_df = covid_df[covid_df['fator_nao_informado'] != 'X']
