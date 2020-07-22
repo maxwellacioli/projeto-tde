@@ -16,10 +16,10 @@ from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_sc
 class MLP(nn.Module):
     def __init__(self):
         super(MLP,self).__init__()
-        self.hidden1 = nn.Linear(22,44)
-        self.hidden2 = nn.Linear(44,16)
-        self.hidden3 = nn.Linear(16,5)
-        self.output = nn.Linear(5,1)
+        self.hidden1 = nn.Linear(22,50)
+        self.hidden2 = nn.Linear(50,25)
+        self.hidden3 = nn.Linear(25,10)
+        self.output = nn.Linear(10,1)
 
         self.sigmoid = nn.Sigmoid()
         # self.softmax = nn.Softmax()
@@ -66,21 +66,32 @@ def get_weights(y):
             weights.append(1)
     return torch.FloatTensor(weights)
 
-def run(num_workers=0,batch_size=100):
+def run(num_workers=0,batch_size=64):
     torch.cuda.empty_cache()
     X_train, X_test, Y_train, Y_test, data, target = preprocess()
     print(X_test.shape)
     X_train = X_train.astype(float).to_numpy().reshape(-1,22)
-    X_test = X_test.astype(float).to_numpy().reshape(-1,22)
     Y_train = Y_train.astype(int).to_numpy().reshape(-1,1)
+
+
+    # X_test = X_test.astype(float).to_numpy().reshape(-1,22)
+    # Y_test = Y_test.astype(int).to_numpy().reshape(-1,1)
+
+    X_test, X_val, Y_test, Y_val = train_test_split(X_test,Y_test,train_size=0.5)
+
+    X_test = X_test.astype(float).to_numpy().reshape(-1,22)
     Y_test = Y_test.astype(int).to_numpy().reshape(-1,1)
+
+    X_val = X_val.astype(float).to_numpy().reshape(-1,22)
+    Y_val = Y_val.astype(int).to_numpy().reshape(-1,1)
+
     
     print(X_train.shape)
     print(Y_train.shape)
     
 
     cov_set = covid_dataset(X_train,Y_train)
-    val_set = covid_dataset(X_test,Y_test)
+    val_set = covid_dataset(X_val,Y_val)
     weights = get_weights(Y_train)
     sampler = WeightedRandomSampler(weights,len(weights))
     #data_generator = DataLoader(cov_set,batch_size=batch_size,num_workers=num_workers,sampler=sampler)
@@ -93,9 +104,9 @@ def run(num_workers=0,batch_size=100):
     loss_fn = nn.BCELoss()
     loss_fn.cuda()
     #optimizer = torch.optim.SGD(mlp.parameters(),lr=0.001,momentum=0.1)
-    optimizer = torch.optim.AdamW(mlp.parameters(), lr=0.01)
+    optimizer = torch.optim.AdamW(mlp.parameters(), lr=0.001)
 
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,patience=5)
     
     epochs = 100
     input("Press any key to start\n")
@@ -133,7 +144,8 @@ def run(num_workers=0,batch_size=100):
     f1_scor = f1_score(Y_test,preds)
     rec_scor = recall_score(Y_test,preds)
     tn, fp, fn, tp = confusion_matrix(Y_test, preds).ravel()
-
+    print(np.count_nonzero(Y_test==0))
+    print(np.count_nonzero(Y_test==1))
     print("Accuracy: {}".format(acc_scor) + "     Precision: {}".format(prec_scor) + "     Recall: {}".format(rec_scor) + "     F1: {}".format(f1_scor))
     print("TN: {}".format(tn)+"     FP: {}".format(fp)+"     FN: {}".format(fn)+"      TP: {}".format(tp))
     plt.figure()
@@ -142,6 +154,7 @@ def run(num_workers=0,batch_size=100):
     plt.figure()
     plt.plot(y_pred)
     plt.show()
-
+    if input("Save file (s) ?\n") == 's':
+        torch.save(MLP,"mlp_model.model")
 if __name__=="__main__":
     run()
