@@ -17,7 +17,7 @@ from sklearn.ensemble import RandomForestClassifier
 X_train, X_test, y_train, y_test, data, target = preprocess()
 
 clf = RandomForestClassifier(criterion='entropy', max_depth= 7, 
-                             class_weight='balanced', max_leaf_nodes=2)
+                             class_weight='balanced')
 
 acc_scor = np.mean(cross_val_score(clf, data, target, cv=10, scoring='accuracy'))
 prec_scor = np.mean(cross_val_score(clf, data, target, cv=10, scoring='precision'))
